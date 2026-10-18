@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz Claude Code — Verdadeiro ou Falso</title>
+  <meta name="description" content="Teste seus conhecimentos sobre Claude Code em 5 perguntas de Verdadeiro ou Falso.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;600&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/theme-init.js"></script>
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <span class="brand"><span class="brand-mark" aria-hidden="true">&gt;_</span> Quiz Claude Code</span>
+    <button type="button" class="theme-toggle" id="theme-toggle" data-action="theme" aria-label="Ativar tema escuro">
+      <span aria-hidden="true" id="theme-toggle-icon">☾</span>
+    </button>
+  </header>
+
+  <main class="app" id="app">
+    <!-- HOME -->
+    <section data-screen="HOME" class="screen" aria-labelledby="home-title">
+      <div class="welcome">
+        <span class="spark" aria-hidden="true">✻</span>
+        <h1 id="home-title" tabindex="-1" data-autofocus>Quanto você sabe sobre Claude Code?<span class="caret" aria-hidden="true"></span></h1>
+        <p class="lead">Cinco afirmações sobre Claude Code. Diga se cada uma é verdadeira ou falsa antes que o tempo acabe.</p>
+      </div>
+      <ul class="rules">
+        <li><span class="rule-key" aria-hidden="true">5</span> perguntas sorteadas do nível escolhido</li>
+        <li><span class="rule-key" aria-hidden="true">20 s</span> para responder cada uma</li>
+        <li><span class="rule-key" aria-hidden="true">+50</span> pontos de bônus por rapidez em cada acerto</li>
+      </ul>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" data-action="start">Começar</button>
+        <button type="button" class="btn btn-secondary" data-action="leaderboard">Ver ranking</button>
+      </div>
+    </section>
+
+    <!-- PLAYER_FORM -->
+    <section data-screen="PLAYER_FORM" class="screen" aria-labelledby="player-title" hidden>
+      <h2 id="player-title" tabindex="-1" data-autofocus>Quem está jogando?</h2>
+      <form id="player-form" class="form" novalidate>
+        <div class="field">
+          <label for="player-name">Nome <span class="field-hint">(exibido no ranking)</span></label>
+          <input id="player-name" name="name" type="text" autocomplete="name" maxlength="40" required aria-describedby="player-name-error">
+          <p class="field-error" id="player-name-error"></p>
+        </div>
+        <div class="field">
+          <label for="player-email">E-mail <span class="field-hint">(nunca exibido publicamente)</span></label>
+          <input id="player-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" required aria-describedby="player-email-error">
+          <p class="field-error" id="player-email-error"></p>
+        </div>
+        <div class="field field-check">
+          <input id="player-consent" name="consent" type="checkbox" required aria-describedby="player-consent-error">
+          <label for="player-consent">Concordo que meu nome seja exibido no ranking público e que meu e-mail seja armazenado para identificação no quiz, conforme a LGPD.</label>
+          <p class="field-error" id="player-consent-error"></p>
+        </div>
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Continuar</button>
+          <button type="button" class="btn btn-ghost" id="not-me" data-action="not-me" hidden>Não sou eu</button>
+          <button type="button" class="btn btn-ghost" data-action="home">Voltar</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- LEVEL_SELECT -->
+    <section data-screen="LEVEL_SELECT" class="screen" aria-labelledby="level-title" hidden>
+      <h2 id="level-title" tabindex="-1" data-autofocus>Escolha o nível</h2>
+      <p class="subtitle" id="level-greeting"></p>
+      <div class="levels">
+        <button type="button" class="level-card" data-action="select-level" data-level="iniciante">
+          <span class="level-num" aria-hidden="true">1</span>
+          <span class="level-name">Iniciante</span>
+          <span class="level-desc">Conceitos e negócios: o que é, para que serve e como adotar.</span>
+        </button>
+        <button type="button" class="level-card" data-action="select-level" data-level="intermediario">
+          <span class="level-num" aria-hidden="true">2</span>
+          <span class="level-name">Intermediário</span>
+          <span class="level-desc">Uso no dia a dia: comandos, CLAUDE.md, Plan Mode e MCP.</span>
+        </button>
+        <button type="button" class="level-card" data-action="select-level" data-level="avancado">
+          <span class="level-num" aria-hidden="true">3</span>
+          <span class="level-name">Avançado</span>
+          <span class="level-desc">Configuração e extensibilidade: hooks, subagentes, permissões e SDK.</span>
+        </button>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" data-action="change-player">Trocar jogador</button>
+      </div>
+    </section>
+
+    <!-- LOADING / SUBMITTING -->
+    <section data-screen="LOADING" class="screen screen-center" aria-labelledby="loading-text" hidden>
+      <span class="spinner" aria-hidden="true">✻</span>
+      <h2 id="loading-text" class="loading-text" tabindex="-1" data-autofocus>Carregando…</h2>
+    </section>
+
+    <!-- QUESTION -->
+    <section data-screen="QUESTION" class="screen" aria-labelledby="question-statement" hidden>
+      <div class="question-meta">
+        <span id="question-level"></span>
+        <span class="mono" id="question-progress"></span>
+      </div>
+      <div class="term" id="timer">
+        <div class="timer-track" aria-hidden="true"><div class="timer-bar" id="timer-bar"></div></div>
+        <div class="question-card" id="question-card">
+          <h2 class="question-statement" id="question-statement" tabindex="-1" data-autofocus></h2>
+        </div>
+        <div class="answers">
+          <button type="button" class="answer-btn" data-action="answer" data-value="true" aria-keyshortcuts="V ArrowLeft">
+            <span class="answer-icon" aria-hidden="true">✓</span>
+            <span>Verdadeiro</span>
+            <kbd aria-hidden="true">V</kbd>
+          </button>
+          <button type="button" class="answer-btn" data-action="answer" data-value="false" aria-keyshortcuts="F ArrowRight">
+            <span class="answer-icon" aria-hidden="true">✗</span>
+            <span>Falso</span>
+            <kbd aria-hidden="true">F</kbd>
+          </button>
+        </div>
+        <div class="term-status">
+          <span class="timer-count" aria-hidden="true"><span class="spark">✻</span> <span id="timer-count">20s</span></span>
+          <p class="answer-feedback" id="answer-feedback" aria-live="polite"></p>
+        </div>
+      </div>
+      <p class="hint">Use <kbd>V</kbd> ou <kbd>←</kbd> para Verdadeiro e <kbd>F</kbd> ou <kbd>→</kbd> para Falso.</p>
+    </section>
+
+    <!-- RESULT -->
+    <section data-screen="RESULT" class="screen" aria-labelledby="result-title" hidden>
+      <h2 id="result-title" tabindex="-1" data-autofocus></h2>
+      <p class="subtitle" id="result-level"></p>
+      <div class="result-card">
+        <p class="result-score"><span id="result-score"></span> <span class="result-max">/750</span></p>
+        <dl class="result-stats">
+          <div><dt>Acertos</dt><dd id="result-correct"></dd></div>
+          <div><dt>Tempo total</dt><dd id="result-time"></dd></div>
+        </dl>
+        <p class="result-rank" id="result-rank"></p>
+        <p class="result-note" id="result-note" hidden></p>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" data-action="review">Ver revisão</button>
+        <button type="button" class="btn btn-secondary" data-action="leaderboard">Ver ranking</button>
+        <button type="button" class="btn btn-secondary" data-action="play-again">Jogar novamente</button>
+        <button type="button" class="btn btn-ghost" data-action="change-level">Trocar nível</button>
+      </div>
+    </section>
+
+    <!-- REVIEW -->
+    <section data-screen="REVIEW" class="screen" aria-labelledby="review-title" hidden>
+      <h2 id="review-title" tabindex="-1" data-autofocus>Revisão</h2>
+      <ol class="review-list" id="review-list"></ol>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" data-action="play-again">Jogar novamente</button>
+        <button type="button" class="btn btn-secondary" data-action="back-result">Voltar ao resultado</button>
+        <button type="button" class="btn btn-ghost" data-action="leaderboard">Ver ranking</button>
+      </div>
+    </section>
+
+    <!-- LEADERBOARD -->
+    <section data-screen="LEADERBOARD" class="screen" aria-labelledby="leaderboard-title" hidden>
+      <h2 id="leaderboard-title" tabindex="-1" data-autofocus>Ranking</h2>
+      <div class="tabs" role="tablist" aria-label="Nível do ranking" id="leaderboard-tabs">
+        <button type="button" role="tab" id="tab-iniciante" data-level-tab="iniciante" aria-controls="leaderboard-panel" aria-selected="true">Iniciante</button>
+        <button type="button" role="tab" id="tab-intermediario" data-level-tab="intermediario" aria-controls="leaderboard-panel" aria-selected="false" tabindex="-1">Intermediário</button>
+        <button type="button" role="tab" id="tab-avancado" data-level-tab="avancado" aria-controls="leaderboard-panel" aria-selected="false" tabindex="-1">Avançado</button>
+      </div>
+      <div class="leaderboard-panel" id="leaderboard-panel" role="tabpanel" aria-labelledby="tab-iniciante">
+        <p class="status" id="leaderboard-status" aria-live="polite"></p>
+        <div class="table-wrap" id="leaderboard-table-wrap" hidden>
+          <table class="leaderboard">
+            <caption class="visually-hidden" id="leaderboard-caption"></caption>
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Nome</th>
+                <th scope="col" class="num">Pontos</th>
+                <th scope="col" class="num">Acertos</th>
+                <th scope="col" class="num">Tempo</th>
+                <th scope="col">Data</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-body"></tbody>
+          </table>
+        </div>
+        <p class="leaderboard-me" id="leaderboard-me" hidden></p>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" data-action="start">Jogar</button>
+        <button type="button" class="btn btn-ghost" data-action="leaderboard-back">Voltar</button>
+      </div>
+    </section>
+
+    <!-- ERROR -->
+    <section data-screen="ERROR" class="screen" aria-labelledby="error-title" hidden>
+      <h2 id="error-title" tabindex="-1" data-autofocus>Algo deu errado</h2>
+      <p class="error-message" id="error-message"></p>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" data-action="retry">Tentar novamente</button>
+        <button type="button" class="btn btn-ghost" data-action="home">Voltar ao início</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <!-- TODO (PRD §11): adicionar link para o aviso de privacidade quando o texto final estiver definido. -->
+    <p>Seu e-mail é usado apenas para identificar você no quiz e nunca é exibido publicamente.</p>
+  </footer>
+
+  <div class="visually-hidden" id="announcer" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
