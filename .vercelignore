@@ -1,0 +1,9 @@
+# Não publicar arquivos que contêm as respostas (seed, PRD) nem documentação interna.
+prd.md
+CLAUDE.md
+README.md
+supabase/
+.claude/
+
+# Credenciais locais (Supabase CLI, service_role, senha do banco).
+.env*
